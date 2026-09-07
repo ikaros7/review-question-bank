@@ -60,8 +60,7 @@ function listHtml(items: ReviewQuestion[]) {
 }
 function answerHtml(item?: ReviewQuestion, index = -1, total = 0) {
   if (!item) return '<section class="empty">没有匹配的问题，请缩短关键词或切换到“全部”。</section>';
-  return `<div class="mobile-detail-bar"><button id="back">${icon('back')}返回列表</button><span>${index + 1} / ${total}</span></div>
-  <article class="answer-card"><span class="answer-category">${item.category}</span><h2>${escapeHtml(item.title)}</h2><p class="question-body">${escapeHtml(item.question)}</p>
+  return `<article class="answer-card"><span class="answer-category">${item.category}</span><h2>${escapeHtml(item.title)}</h2><p class="question-body">${escapeHtml(item.question)}</p>
   <section class="answer-highlight"><h3>参考答案</h3><p>${escapeHtml(item.shortAnswer)}</p></section>
   <section class="mechanism"><h3>机制链</h3><ol>${item.mechanism.map((step, i) => `<li><span>${i+1}</span><p>${escapeHtml(step)}</p></li>`).join('')}</ol></section>
   <div class="notes"><section class="condition"><h3>✓ 成立条件</h3><ul>${item.conditions.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul></section><section class="pitfall"><h3>○ 常见误区</h3><ul>${item.pitfalls.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul></section></div>
@@ -73,7 +72,7 @@ function renderReview() {
   if (!items.some(x => x.id === selectedId)) selectedId = items[0]?.id || '';
   const selected = items.find(x => x.id === selectedId);
   const selectedIndex = items.findIndex(x => x.id === selectedId);
-  document.querySelector('#app')!.innerHTML = `<header><div class="logo">复</div><strong>复习题库</strong></header><main class="page ${mobileDetail ? 'show-detail':'show-list'}">
+  document.querySelector('#app')!.innerHTML = `<header class="${mobileDetail ? 'detail-active' : ''}"><div class="brand-content"><div class="logo">复</div><strong>复习题库</strong></div><div class="mobile-header-return"><button id="back">${icon('back')}返回列表</button><span>${selectedIndex + 1} / ${items.length}</span></div></header><main class="page ${mobileDetail ? 'show-detail':'show-list'}">
     <section class="hero"><div><span>只读复习资料</span><h1>问题与参考答案 <b>${reviewQuestions.length} 道</b></h1><p>选择一个问题，查看答案、机制和易错点。</p></div><button id="open-settings" class="settings-button">${icon('settings')}字体设置</button></section>
     <div class="layout"><aside class="question-panel"><section class="toolbar"><label>${icon('search')}<input id="search" value="${escapeHtml(query)}" placeholder="搜索：长债、通胀、黄金……"></label><div>${reviewCategories.map(x=>`<button class="filter ${x===category?'active':''}" data-category="${x}">${x}</button>`).join('')}</div><small>显示 ${items.length} / ${reviewQuestions.length}</small></section><div class="question-list">${listHtml(items)}</div></aside><section class="answer-panel">${answerHtml(selected, selectedIndex, items.length)}</section></div></main>`;
   bindReview(items);
