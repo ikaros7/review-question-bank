@@ -60,13 +60,13 @@ function listHtml(items: ReviewQuestion[]) {
 }
 function answerHtml(item?: ReviewQuestion, index = -1, total = 0) {
   if (!item) return '<section class="empty">没有匹配的问题，请缩短关键词或切换到“全部”。</section>';
-  return `<div class="mobile-detail-bar"><button id="back">${icon('back')}题目列表</button><span>${index + 1} / ${total}</span></div>
+  return `<div class="mobile-detail-bar"><button id="back">${icon('back')}返回列表</button><span>${index + 1} / ${total}</span></div>
   <article class="answer-card"><span class="answer-category">${item.category}</span><h2>${escapeHtml(item.title)}</h2><p class="question-body">${escapeHtml(item.question)}</p>
   <section class="answer-highlight"><h3>参考答案</h3><p>${escapeHtml(item.shortAnswer)}</p></section>
   <section class="mechanism"><h3>机制链</h3><ol>${item.mechanism.map((step, i) => `<li><span>${i+1}</span><p>${escapeHtml(step)}</p></li>`).join('')}</ol></section>
   <div class="notes"><section class="condition"><h3>✓ 成立条件</h3><ul>${item.conditions.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul></section><section class="pitfall"><h3>○ 常见误区</h3><ul>${item.pitfalls.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul></section></div>
   <footer><strong>整理依据：</strong>${escapeHtml(item.source)}<br>答案是当前学习材料的参考解释；条件变化时，应重新判断而不是背诵方向。</footer></article>
-  <nav class="mobile-nav"><button id="previous" ${index <= 0 ? 'disabled':''}>上一题</button><button id="next" ${index >= total-1 ? 'disabled':''}>下一题</button></nav>`;
+  <nav class="mobile-nav" aria-label="答案页导航"><button id="previous" ${index <= 0 ? 'disabled':''}>上一题</button><button id="next" ${index >= total-1 ? 'disabled':''}>下一题</button></nav>`;
 }
 function renderReview() {
   const items = filtered();
@@ -82,7 +82,8 @@ function bindReview(items: ReviewQuestion[]) {
   document.querySelector<HTMLInputElement>('#search')?.addEventListener('input', e => { query=(e.target as HTMLInputElement).value; renderReview(); document.querySelector<HTMLInputElement>('#search')?.focus(); });
   document.querySelectorAll<HTMLElement>('[data-category]').forEach(el => el.onclick=()=>{category=el.dataset.category!; renderReview();});
   document.querySelectorAll<HTMLElement>('[data-question]').forEach(el => el.onclick=()=>{savedScrollY=scrollY; selectedId=el.dataset.question!; mobileDetail=true; renderReview(); scrollTo(0,0);});
-  document.querySelector<HTMLElement>('#back')?.addEventListener('click',()=>{mobileDetail=false; renderReview(); requestAnimationFrame(()=>requestAnimationFrame(()=>scrollTo(0,savedScrollY)));});
+  const returnToList=()=>{mobileDetail=false; renderReview(); requestAnimationFrame(()=>requestAnimationFrame(()=>scrollTo(0,savedScrollY)));};
+  document.querySelector<HTMLElement>('#back')?.addEventListener('click',returnToList);
   const move=(offset:number)=>{const i=items.findIndex(x=>x.id===selectedId); if(items[i+offset]){selectedId=items[i+offset].id;renderReview();scrollTo(0,0);}};
   document.querySelector<HTMLElement>('#previous')?.addEventListener('click',()=>move(-1)); document.querySelector<HTMLElement>('#next')?.addEventListener('click',()=>move(1));
   document.querySelector<HTMLElement>('#open-settings')!.onclick=()=>{location.hash='settings';};
