@@ -26,6 +26,7 @@ let selectedId = reviewQuestions[0].id;
 let mobileDetail = false;
 let savedScrollY = 0;
 let answerRevealed = false;
+let edgeSwipeStart: {x:number; y:number; time:number} | null = null;
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>'"]/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]!));
@@ -87,6 +88,10 @@ function bindReview(items: ReviewQuestion[]) {
   document.querySelector<HTMLElement>('#reveal-answer')?.addEventListener('click',()=>{answerRevealed=true;renderReview();});
   const returnToList=()=>{answerRevealed=false;mobileDetail=false; renderReview(); requestAnimationFrame(()=>requestAnimationFrame(()=>scrollTo(0,savedScrollY)));};
   document.querySelector<HTMLElement>('#back')?.addEventListener('click',returnToList);
+  const answerPanel=document.querySelector<HTMLElement>('.answer-panel');
+  answerPanel?.addEventListener('touchstart',(event)=>{const touch=event.changedTouches[0];edgeSwipeStart=touch.clientX<=36?{x:touch.clientX,y:touch.clientY,time:Date.now()}:null;},{passive:true});
+  answerPanel?.addEventListener('touchend',(event)=>{const start=edgeSwipeStart;edgeSwipeStart=null;if(!start||!mobileDetail)return;const touch=event.changedTouches[0];const dx=touch.clientX-start.x;const dy=Math.abs(touch.clientY-start.y);if(dx>=72&&dy<=Math.max(48,dx*.65)&&Date.now()-start.time<=800)returnToList();},{passive:true});
+  answerPanel?.addEventListener('touchcancel',()=>{edgeSwipeStart=null;},{passive:true});
   const move=(offset:number)=>{const i=items.findIndex(x=>x.id===selectedId); if(items[i+offset]){selectedId=items[i+offset].id;answerRevealed=false;renderReview();scrollTo(0,0);}};
   document.querySelector<HTMLElement>('#previous')?.addEventListener('click',()=>move(-1)); document.querySelector<HTMLElement>('#next')?.addEventListener('click',()=>move(1));
   document.querySelector<HTMLElement>('#open-settings')!.onclick=()=>{location.hash='settings';};
